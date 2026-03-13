@@ -1,0 +1,259 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Admin</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+<div class="container-fluid py-3">
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <h4 class="mb-0">Admin Calendar</h4>
+    <form method="post" action="{{ url_for('admin.logout') }}">
+      <button class="btn btn-outline-danger btn-sm">Logout</button>
+    </form>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-lg-8">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <div id="adminCal"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="card shadow-sm mb-3">
+        <div class="card-body">
+          <h6>Engineers</h6>
+	  <div class="mb-2">
+  	   <input id="new_name" class="form-control form-control-sm mb-1" placeholder="First name">
+  	   <input id="new_phone" class="form-control form-control-sm mb-1" placeholder="Phone">
+  	   <input id="new_email" class="form-control form-control-sm mb-2" placeholder="Email">
+  	   <button class="btn btn-primary btn-sm w-100" onclick="addEngineer()">Add engineer</button>
+	  </div>
+	  <hr>
+
+          <div class="input-group mb-2">
+            <input id="search" class="form-control form-control-sm" placeholder="Search…">
+            <button class="btn btn-outline-secondary btn-sm" onclick="refreshEngineers()">Refresh</button>
+          </div>
+          <div id="engList" style="max-height:240px; overflow:auto;"></div>
+
+          <hr>
+          <div class="d-grid gap-2">
+            <button class="btn btn-success btn-sm" onclick="bulkAssign()">Assign selected engineers to selected days</button>
+            <button class="btn btn-warning btn-sm" onclick="bulkRemove()">Remove selected engineers from selected days</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h6>Last 6 months totals</h6>
+          <div id="statsBox" class="small text-muted">Loading…</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+<script src="{{ url_for('static', filename='js/locales-all.global.min.js') }}"></script>
+<script>
+let engineers = [];
+let selectedDates = new Set();
+
+function iso(d){ return d.toISOString().slice(0,10); }
+
+async function refreshEngineers(){
+  engineers = await fetch("/admin/api/engineers").then(r=>r.json());
+  renderEngineerList();
+}
+
+function renderEngineerList(){
+  const q = (document.getElementById("search").value || "").toLowerCase();
+  const box = document.getElementById("engList");
+  box.innerHTML = "";
+
+  engineers
+    .filter(e => e.first_name.toLowerCase().includes(q) || e.email.toLowerCase().includes(q))
+    .forEach(e => {
+      const id = `eng_${e.id}`;
+      box.innerHTML += `
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" value="${e.id}" id="${id}">
+          <label class="form-check-label" for="${id}">
+            <input class="form-control form-control-sm mb-1" value="${e.first_name}" id="name_${e.id}">
+  	    <input class="form-control form-control-sm mb-1" value="${e.phone}" id="phone_${e.id}">
+  	    <input class="form-control form-control-sm mb-1" value="${e.email}" id="email_${e.id}">
+  	    <div class="d-flex gap-1">
+    	      <button class="btn btn-outline-success btn-sm" onclick="updateEngineer(${e.id})">Save</button>
+    	      <button class="btn btn-outline-danger btn-sm" onclick="deleteEngineer(${e.id})">Deactivate</button>
+  	    </div>
+          </label>
+        </div>
+        <hr class="my-2">
+      `;
+    });
+}
+
+function getSelectedEngineerIds(){
+  return Array.from(document.querySelectorAll("#engList input[type=checkbox]:checked"))
+    .map(x => parseInt(x.value,10));
+}
+
+function resetSelection(){
+  // clear selected dates
+  selectedDates.clear();
+
+  // clear calendar selection highlight
+  calendar.unselect();
+
+  // uncheck all engineers
+  document
+    .querySelectorAll("#engList input[type=checkbox]")
+    .forEach(cb => cb.checked = false);
+}
+
+
+async function bulkAssign(){
+  const engineer_ids = getSelectedEngineerIds();
+  const dates = Array.from(selectedDates);
+  if(!engineer_ids.length || !dates.length){ alert("Select engineers and days first."); return; }
+
+  const res = await fetch("/admin/api/assignments/bulk_add", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({engineer_ids, dates})
+  }).then(r=>r.json());
+
+  alert(`Created: ${res.created}`);
+  resetSelection();
+  calendar.refetchEvents();
+  loadStats();
+}
+
+async function bulkRemove(){
+  const engineer_ids = getSelectedEngineerIds();
+  const dates = Array.from(selectedDates);
+  if(!dates.length){ alert("Select days first."); return; }
+
+  const res = await fetch("/admin/api/assignments/bulk_remove", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({engineer_ids, dates})
+  }).then(r=>r.json());
+
+  alert(`Removed: ${res.removed}`);
+  resetSelection();
+  calendar.refetchEvents();
+  loadStats();
+}
+
+async function loadStats(){
+  const rows = await fetch("/admin/api/stats/last6months").then(r=>r.json());
+  const box = document.getElementById("statsBox");
+  if(!rows.length){ box.innerHTML = "No data"; return; }
+  box.innerHTML = rows.map(r => `<div><strong>${r.first_name}</strong>: ${r.days}</div>`).join("");
+}
+
+async function addEngineer(){
+  const first_name = document.getElementById("new_name").value.trim();
+  const phone = document.getElementById("new_phone").value.trim();
+  const email = document.getElementById("new_email").value.trim();
+
+  if(!first_name || !email){
+    alert("Name and email required");
+    return;
+  }
+
+  await fetch("/admin/api/engineers", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({first_name, phone, email})
+  });
+
+  document.getElementById("new_name").value = "";
+  document.getElementById("new_phone").value = "";
+  document.getElementById("new_email").value = "";
+
+  refreshEngineers();
+}
+
+async function updateEngineer(id){
+  await fetch(`/admin/api/engineers/${id}`, {
+    method: "PUT",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({
+      first_name: document.getElementById(`name_${id}`).value,
+      phone: document.getElementById(`phone_${id}`).value,
+      email: document.getElementById(`email_${id}`).value
+    })
+  });
+  alert("Saved");
+}
+
+async function deleteEngineer(id){
+  if(!confirm("Deactivate this engineer?")) return;
+  await fetch(`/admin/api/engineers/${id}`, { method: "DELETE" });
+  refreshEngineers();
+}	
+
+let calendar;
+document.addEventListener('DOMContentLoaded', async function() {
+  selectedDates.clear();
+  await refreshEngineers();
+  document.getElementById("search").addEventListener("input", renderEngineerList);
+
+  const calEl = document.getElementById("adminCal");
+  calendar = new FullCalendar.Calendar(calEl, {
+    eventContent: function(arg) {
+      const name = arg.event.title;
+      const phone = arg.event.extendedProps.phone;
+
+      const wrapper = document.createElement("div");
+      wrapper.style.fontSize = "12px";
+      wrapper.style.lineHeight = "1.2";
+
+      const nameDiv = document.createElement("div");
+      nameDiv.textContent = name;
+      nameDiv.style.fontWeight = "600";
+
+      wrapper.appendChild(nameDiv);
+
+      if (phone) {
+        const phoneDiv = document.createElement("div");
+        phoneDiv.textContent = "📞 " + phone;
+        phoneDiv.style.fontSize = "11px";
+        phoneDiv.style.opacity = "0.8";
+        wrapper.appendChild(phoneDiv);
+  }
+  return { domNodes: [wrapper] };
+},
+
+    initialView: 'dayGridMonth',
+    height: "auto",
+    selectable: true,
+    selectMirror: true,
+    select: function(info){
+      // add all days in selection
+      selectedDates.clear();
+      let d = new Date(info.start);
+      while(d < info.end){
+        selectedDates.add(d.toLocaleDateString('en-CA'));
+        d.setDate(d.getDate()+1);
+      }
+    },
+    unselectAuto: false,
+    events: "/api/public/assignments" // reuse same API for display
+  });
+  calendar.render();
+
+  loadStats();
+});
+</script>
+</body>
+</html>
