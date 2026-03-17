@@ -1,259 +1,714 @@
 <!doctype html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Admin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Админ самбар</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css" rel="stylesheet">
-</head>
-<body class="bg-light">
-<div class="container-fluid py-3">
-  <div class="d-flex justify-content-between align-items-center mb-2">
-    <h4 class="mb-0">Admin Calendar</h4>
-    <form method="post" action="{{ url_for('admin.logout') }}">
-      <button class="btn btn-outline-danger btn-sm">Logout</button>
-    </form>
-  </div>
+  <style>
+    :root {
+      --page-bg: #f4f6fb;
+      --card-bg: #ffffff;
+      --card-border: #dfe5f1;
+      --text-main: #1f2a44;
+      --text-soft: #6d7892;
+      --blue: #1f66e5;
+      --blue-dark: #1653c1;
+      --green: #2aa35a;
+      --yellow: #f4a524;
+      --red: #d9534f;
+      --shadow: 0 10px 24px rgba(24, 47, 94, 0.08);
+      --radius: 16px;
+    }
 
-  <div class="row g-3">
-    <div class="col-lg-8">
-      <div class="card shadow-sm">
-        <div class="card-body">
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      color: var(--text-main);
+      background:
+        radial-gradient(circle at top right, rgba(31, 102, 229, 0.08), transparent 26%),
+        linear-gradient(180deg, #f9fbff 0%, var(--page-bg) 100%);
+    }
+
+    .dashboard {
+      max-width: 1360px;
+      margin: 0 auto;
+      padding: 20px 18px 28px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .title-wrap h1 {
+      margin: 0;
+      font-size: clamp(1.45rem, 2.6vw, 2.1rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    .title-wrap p {
+      margin: 4px 0 0;
+      color: var(--text-soft);
+      font-size: 0.98rem;
+    }
+
+    .logout-btn,
+    .toolbar-btn,
+    .primary-btn,
+    .success-btn,
+    .warning-btn,
+    .inline-btn {
+      border: 0;
+      border-radius: 12px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .logout-btn:hover,
+    .toolbar-btn:hover,
+    .primary-btn:hover,
+    .success-btn:hover,
+    .warning-btn:hover,
+    .inline-btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .logout-btn {
+      padding: 10px 14px;
+      color: #fff;
+      background: linear-gradient(180deg, #ef6f6b 0%, var(--red) 100%);
+      box-shadow: 0 8px 18px rgba(217, 83, 79, 0.22);
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.6fr) minmax(340px, 0.95fr);
+      gap: 16px;
+      align-items: start;
+    }
+
+    .panel {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 18px 20px 0;
+      flex-wrap: wrap;
+    }
+
+    .panel-header h2,
+    .panel-header h3,
+    .side-panel h3 {
+      margin: 0;
+      font-weight: 800;
+      font-size: 1.15rem;
+    }
+
+    .panel-header p,
+    .side-panel p {
+      margin: 4px 0 0;
+      color: var(--text-soft);
+      font-size: 0.95rem;
+    }
+
+    .calendar-panel {
+      overflow: hidden;
+    }
+
+    .calendar-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .toolbar-btn {
+      padding: 10px 14px;
+      color: var(--blue-dark);
+      background: #fff;
+      border: 1px solid #cfdaf0;
+      box-shadow: var(--shadow);
+    }
+
+    .calendar-shell {
+      padding: 8px 16px 16px;
+    }
+
+    #adminCal {
+      min-height: 720px;
+    }
+
+    .side-stack {
+      display: grid;
+      gap: 16px;
+    }
+
+    .side-panel {
+      padding: 18px;
+    }
+
+    .section-kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--blue-dark);
+      font-size: 0.84rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 10px;
+    }
+
+    .field-grid {
+      display: grid;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .field,
+    .search-wrap {
+      position: relative;
+    }
+
+    .field i,
+    .search-wrap i {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #7b88a8;
+      pointer-events: none;
+    }
+
+    .field input,
+    .search-wrap input,
+    .engineer-card input {
+      width: 100%;
+      border: 1px solid #d8e1f2;
+      border-radius: 12px;
+      background: #f9fbff;
+      padding: 11px 12px 11px 38px;
+      color: var(--text-main);
+      outline: none;
+    }
+
+    .engineer-card input {
+      padding-left: 12px;
+      background: #fff;
+    }
+
+    .field input:focus,
+    .search-wrap input:focus,
+    .engineer-card input:focus {
+      border-color: #92b2ef;
+      box-shadow: 0 0 0 3px rgba(31, 102, 229, 0.1);
+    }
+
+    .primary-btn,
+    .success-btn,
+    .warning-btn {
+      width: 100%;
+      padding: 12px 14px;
+      color: #fff;
+      box-shadow: var(--shadow);
+    }
+
+    .primary-btn {
+      background: linear-gradient(180deg, #2e78f7 0%, var(--blue-dark) 100%);
+    }
+
+    .success-btn {
+      background: linear-gradient(180deg, #34b666 0%, var(--green) 100%);
+    }
+
+    .warning-btn {
+      background: linear-gradient(180deg, #f7bb50 0%, #df9509 100%);
+      color: #182033;
+    }
+
+    .search-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .engineer-list {
+      margin-top: 14px;
+      max-height: 440px;
+      overflow: auto;
+      padding-right: 4px;
+    }
+
+    .engineer-card {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 12px;
+      align-items: start;
+      padding: 14px;
+      border: 1px solid #e4ebf7;
+      border-radius: 14px;
+      background: linear-gradient(180deg, #ffffff 0%, #f9fbff 100%);
+      box-shadow: 0 6px 16px rgba(25, 45, 84, 0.05);
+    }
+
+    .engineer-card + .engineer-card {
+      margin-top: 12px;
+    }
+
+    .engineer-check {
+      margin-top: 6px;
+      transform: scale(1.15);
+    }
+
+    .engineer-fields {
+      display: grid;
+      gap: 8px;
+    }
+
+    .engineer-actions {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .inline-btn {
+      padding: 10px 12px;
+      font-size: 0.92rem;
+      text-align: center;
+      box-shadow: var(--shadow);
+    }
+
+    .inline-btn.save {
+      color: #fff;
+      background: linear-gradient(180deg, #34b666 0%, var(--green) 100%);
+    }
+
+    .inline-btn.delete {
+      color: #fff;
+      background: linear-gradient(180deg, #ef6f6b 0%, var(--red) 100%);
+    }
+
+    .bulk-actions {
+      display: grid;
+      gap: 10px;
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid #ebeff6;
+    }
+
+    .stats-list {
+      margin-top: 14px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .stat-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 12px 14px;
+      border: 1px solid #e4ebf7;
+      border-radius: 14px;
+      background: linear-gradient(180deg, #ffffff 0%, #f9fbff 100%);
+    }
+
+    .stat-item strong {
+      font-size: 0.98rem;
+    }
+
+    .stat-badge {
+      min-width: 42px;
+      border-radius: 999px;
+      padding: 6px 10px;
+      background: #eef5ff;
+      color: var(--blue-dark);
+      text-align: center;
+      font-weight: 800;
+    }
+
+    .fc .fc-toolbar-title {
+      font-size: 1.2rem;
+      font-weight: 800;
+    }
+
+    .fc .fc-button {
+      border-radius: 10px;
+      border: 0;
+      background: linear-gradient(180deg, #2e78f7 0%, var(--blue-dark) 100%);
+      box-shadow: 0 8px 18px rgba(31, 102, 229, 0.16);
+      font-weight: 700;
+    }
+
+    .fc .fc-daygrid-day,
+    .fc .fc-scrollgrid {
+      border-color: #e2e9f6;
+    }
+
+    .fc .fc-daygrid-day-frame {
+      min-height: 112px;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.85) 0%, rgba(249, 251, 255, 0.96) 100%);
+    }
+
+    .fc .fc-col-header-cell {
+      background: #f6f9ff;
+      color: var(--text-main);
+      font-weight: 800;
+    }
+
+    .fc .fc-event {
+      border: 0;
+      border-radius: 10px;
+      background: linear-gradient(180deg, #34b666 0%, var(--green) 100%);
+      color: #fff;
+      padding: 3px 6px;
+    }
+
+    .fc .fc-highlight {
+      background: rgba(31, 102, 229, 0.12);
+    }
+
+    .muted {
+      color: var(--text-soft);
+      font-size: 0.94rem;
+    }
+
+    @media (max-width: 1080px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 680px) {
+      .dashboard {
+        padding: 16px 12px 22px;
+      }
+
+      .panel-header,
+      .side-panel {
+        padding-left: 14px;
+        padding-right: 14px;
+      }
+
+      .calendar-shell {
+        padding-left: 10px;
+        padding-right: 10px;
+      }
+
+      .search-row,
+      .engineer-actions {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="dashboard">
+    <section class="topbar">
+      <div class="title-wrap">
+        <h1>Админы хуваарийн самбар</h1>
+        <p>Инженерүүдээ удирдаж, ээлж хуваарилж, сүүлийн жижүүрийн ачааллыг хянаарай.</p>
+      </div>
+      <form method="post" action="{{ url_for('admin.logout') }}">
+        <button class="logout-btn" type="submit"><i class="bi bi-box-arrow-right"></i> Гарах</button>
+      </form>
+    </section>
+
+    <section class="layout">
+      <article class="panel calendar-panel">
+        <div class="panel-header">
+          <div>
+            <div class="section-kicker"><i class="bi bi-calendar3"></i> Хуваарь</div>
+            <h2>Жижүүрийн календарь</h2>
+            <p>Нэг эсвэл хэд хэдэн өдрийг сонгоод баруун талын хэсгээс инженерүүдээ онооно уу.</p>
+          </div>
+          <div class="calendar-toolbar">
+            <button id="clearSelectionBtn" type="button" class="toolbar-btn"><i class="bi bi-x-circle"></i> Сонголт цэвэрлэх</button>
+          </div>
+        </div>
+        <div class="calendar-shell">
           <div id="adminCal"></div>
         </div>
-      </div>
-    </div>
+      </article>
 
-    <div class="col-lg-4">
-      <div class="card shadow-sm mb-3">
-        <div class="card-body">
-          <h6>Engineers</h6>
-	  <div class="mb-2">
-  	   <input id="new_name" class="form-control form-control-sm mb-1" placeholder="First name">
-  	   <input id="new_phone" class="form-control form-control-sm mb-1" placeholder="Phone">
-  	   <input id="new_email" class="form-control form-control-sm mb-2" placeholder="Email">
-  	   <button class="btn btn-primary btn-sm w-100" onclick="addEngineer()">Add engineer</button>
-	  </div>
-	  <hr>
+      <div class="side-stack">
+        <section class="panel side-panel">
+          <div class="section-kicker"><i class="bi bi-person-plus"></i> Инженер нэмэх</div>
+          <h3>Инженерийн жагсаалт</h3>
+          <p>Нэг газраас инженер нэмэх, засах, хайх, идэвхгүй болгох боломжтой.</p>
 
-          <div class="input-group mb-2">
-            <input id="search" class="form-control form-control-sm" placeholder="Search…">
-            <button class="btn btn-outline-secondary btn-sm" onclick="refreshEngineers()">Refresh</button>
+          <div class="field-grid">
+            <label class="field">
+              <i class="bi bi-person"></i>
+              <input id="new_name" placeholder="Нэр">
+            </label>
+            <label class="field">
+              <i class="bi bi-telephone"></i>
+              <input id="new_phone" placeholder="Утас">
+            </label>
+            <label class="field">
+              <i class="bi bi-envelope"></i>
+              <input id="new_email" placeholder="Имэйл">
+            </label>
+            <button class="primary-btn" onclick="addEngineer()"><i class="bi bi-plus-circle"></i> Инженер нэмэх</button>
           </div>
-          <div id="engList" style="max-height:240px; overflow:auto;"></div>
 
-          <hr>
-          <div class="d-grid gap-2">
-            <button class="btn btn-success btn-sm" onclick="bulkAssign()">Assign selected engineers to selected days</button>
-            <button class="btn btn-warning btn-sm" onclick="bulkRemove()">Remove selected engineers from selected days</button>
+          <div class="search-row">
+            <label class="search-wrap">
+              <i class="bi bi-search"></i>
+              <input id="search" placeholder="Нэр эсвэл имэйлээр хайх">
+            </label>
+            <button class="toolbar-btn" onclick="refreshEngineers()"><i class="bi bi-arrow-repeat"></i> Шинэчлэх</button>
           </div>
-        </div>
+
+          <div id="engList" class="engineer-list"></div>
+
+          <div class="bulk-actions">
+            <button class="success-btn" onclick="bulkAssign()"><i class="bi bi-calendar-check"></i> Сонгосон инженерүүдийг сонгосон өдрүүдэд оноох</button>
+            <button class="warning-btn" onclick="bulkRemove()"><i class="bi bi-calendar-minus"></i> Сонгосон инженерүүдийг сонгосон өдрүүдээс хасах</button>
+          </div>
+        </section>
+
+        <section class="panel side-panel">
+          <div class="section-kicker"><i class="bi bi-bar-chart"></i> Статистик</div>
+          <h3>Сүүлийн 6 сарын дүн</h3>
+          <p>Идэвхтэй инженер бүр хэдэн өдөр жижүүр авсныг хурдан харах хэсэг.</p>
+          <div id="statsBox" class="stats-list muted">Уншиж байна...</div>
+        </section>
       </div>
+    </section>
+  </main>
 
-      <div class="card shadow-sm">
-        <div class="card-body">
-          <h6>Last 6 months totals</h6>
-          <div id="statsBox" class="small text-muted">Loading…</div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+  <script src="{{ url_for('static', filename='js/locales-all.global.min.js') }}"></script>
+  <script>
+    let engineers = [];
+    let selectedDates = new Set();
+    let calendar;
 
-<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
-<script src="{{ url_for('static', filename='js/locales-all.global.min.js') }}"></script>
-<script>
-let engineers = [];
-let selectedDates = new Set();
+    function iso(d) {
+      return d.toISOString().slice(0, 10);
+    }
 
-function iso(d){ return d.toISOString().slice(0,10); }
+    async function refreshEngineers() {
+      engineers = await fetch("/admin/api/engineers").then(r => r.json());
+      renderEngineerList();
+    }
 
-async function refreshEngineers(){
-  engineers = await fetch("/admin/api/engineers").then(r=>r.json());
-  renderEngineerList();
-}
+    function renderEngineerList() {
+      const q = (document.getElementById("search").value || "").toLowerCase();
+      const box = document.getElementById("engList");
+      const filtered = engineers.filter(e =>
+        e.first_name.toLowerCase().includes(q) || e.email.toLowerCase().includes(q)
+      );
 
-function renderEngineerList(){
-  const q = (document.getElementById("search").value || "").toLowerCase();
-  const box = document.getElementById("engList");
-  box.innerHTML = "";
-
-  engineers
-    .filter(e => e.first_name.toLowerCase().includes(q) || e.email.toLowerCase().includes(q))
-    .forEach(e => {
-      const id = `eng_${e.id}`;
-      box.innerHTML += `
-        <div class="form-check">
-          <input class="form-check-input" type="checkbox" value="${e.id}" id="${id}">
-          <label class="form-check-label" for="${id}">
-            <input class="form-control form-control-sm mb-1" value="${e.first_name}" id="name_${e.id}">
-  	    <input class="form-control form-control-sm mb-1" value="${e.phone}" id="phone_${e.id}">
-  	    <input class="form-control form-control-sm mb-1" value="${e.email}" id="email_${e.id}">
-  	    <div class="d-flex gap-1">
-    	      <button class="btn btn-outline-success btn-sm" onclick="updateEngineer(${e.id})">Save</button>
-    	      <button class="btn btn-outline-danger btn-sm" onclick="deleteEngineer(${e.id})">Deactivate</button>
-  	    </div>
-          </label>
-        </div>
-        <hr class="my-2">
-      `;
-    });
-}
-
-function getSelectedEngineerIds(){
-  return Array.from(document.querySelectorAll("#engList input[type=checkbox]:checked"))
-    .map(x => parseInt(x.value,10));
-}
-
-function resetSelection(){
-  // clear selected dates
-  selectedDates.clear();
-
-  // clear calendar selection highlight
-  calendar.unselect();
-
-  // uncheck all engineers
-  document
-    .querySelectorAll("#engList input[type=checkbox]")
-    .forEach(cb => cb.checked = false);
-}
-
-
-async function bulkAssign(){
-  const engineer_ids = getSelectedEngineerIds();
-  const dates = Array.from(selectedDates);
-  if(!engineer_ids.length || !dates.length){ alert("Select engineers and days first."); return; }
-
-  const res = await fetch("/admin/api/assignments/bulk_add", {
-    method: "POST",
-    headers: {"Content-Type":"application/json"},
-    body: JSON.stringify({engineer_ids, dates})
-  }).then(r=>r.json());
-
-  alert(`Created: ${res.created}`);
-  resetSelection();
-  calendar.refetchEvents();
-  loadStats();
-}
-
-async function bulkRemove(){
-  const engineer_ids = getSelectedEngineerIds();
-  const dates = Array.from(selectedDates);
-  if(!dates.length){ alert("Select days first."); return; }
-
-  const res = await fetch("/admin/api/assignments/bulk_remove", {
-    method: "POST",
-    headers: {"Content-Type":"application/json"},
-    body: JSON.stringify({engineer_ids, dates})
-  }).then(r=>r.json());
-
-  alert(`Removed: ${res.removed}`);
-  resetSelection();
-  calendar.refetchEvents();
-  loadStats();
-}
-
-async function loadStats(){
-  const rows = await fetch("/admin/api/stats/last6months").then(r=>r.json());
-  const box = document.getElementById("statsBox");
-  if(!rows.length){ box.innerHTML = "No data"; return; }
-  box.innerHTML = rows.map(r => `<div><strong>${r.first_name}</strong>: ${r.days}</div>`).join("");
-}
-
-async function addEngineer(){
-  const first_name = document.getElementById("new_name").value.trim();
-  const phone = document.getElementById("new_phone").value.trim();
-  const email = document.getElementById("new_email").value.trim();
-
-  if(!first_name || !email){
-    alert("Name and email required");
-    return;
-  }
-
-  await fetch("/admin/api/engineers", {
-    method: "POST",
-    headers: {"Content-Type":"application/json"},
-    body: JSON.stringify({first_name, phone, email})
-  });
-
-  document.getElementById("new_name").value = "";
-  document.getElementById("new_phone").value = "";
-  document.getElementById("new_email").value = "";
-
-  refreshEngineers();
-}
-
-async function updateEngineer(id){
-  await fetch(`/admin/api/engineers/${id}`, {
-    method: "PUT",
-    headers: {"Content-Type":"application/json"},
-    body: JSON.stringify({
-      first_name: document.getElementById(`name_${id}`).value,
-      phone: document.getElementById(`phone_${id}`).value,
-      email: document.getElementById(`email_${id}`).value
-    })
-  });
-  alert("Saved");
-}
-
-async function deleteEngineer(id){
-  if(!confirm("Deactivate this engineer?")) return;
-  await fetch(`/admin/api/engineers/${id}`, { method: "DELETE" });
-  refreshEngineers();
-}	
-
-let calendar;
-document.addEventListener('DOMContentLoaded', async function() {
-  selectedDates.clear();
-  await refreshEngineers();
-  document.getElementById("search").addEventListener("input", renderEngineerList);
-
-  const calEl = document.getElementById("adminCal");
-  calendar = new FullCalendar.Calendar(calEl, {
-    eventContent: function(arg) {
-      const name = arg.event.title;
-      const phone = arg.event.extendedProps.phone;
-
-      const wrapper = document.createElement("div");
-      wrapper.style.fontSize = "12px";
-      wrapper.style.lineHeight = "1.2";
-
-      const nameDiv = document.createElement("div");
-      nameDiv.textContent = name;
-      nameDiv.style.fontWeight = "600";
-
-      wrapper.appendChild(nameDiv);
-
-      if (phone) {
-        const phoneDiv = document.createElement("div");
-        phoneDiv.textContent = "📞 " + phone;
-        phoneDiv.style.fontSize = "11px";
-        phoneDiv.style.opacity = "0.8";
-        wrapper.appendChild(phoneDiv);
-  }
-  return { domNodes: [wrapper] };
-},
-
-    initialView: 'dayGridMonth',
-    height: "auto",
-    selectable: true,
-    selectMirror: true,
-    select: function(info){
-      // add all days in selection
-      selectedDates.clear();
-      let d = new Date(info.start);
-      while(d < info.end){
-        selectedDates.add(d.toLocaleDateString('en-CA'));
-        d.setDate(d.getDate()+1);
+      if (!filtered.length) {
+        box.innerHTML = `<div class="muted">Инженер олдсонгүй.</div>`;
+        return;
       }
-    },
-    unselectAuto: false,
-    events: "/api/public/assignments" // reuse same API for display
-  });
-  calendar.render();
 
-  loadStats();
-});
-</script>
+      box.innerHTML = filtered.map(e => `
+        <div class="engineer-card">
+          <input class="form-check-input engineer-check" type="checkbox" value="${e.id}" id="eng_${e.id}">
+          <div class="engineer-fields">
+            <input value="${e.first_name}" id="name_${e.id}" aria-label="Name ${e.first_name}">
+            <input value="${e.phone}" id="phone_${e.id}" aria-label="Утас ${e.first_name}">
+            <input value="${e.email}" id="email_${e.id}" aria-label="Имэйл ${e.first_name}">
+            <div class="engineer-actions">
+              <button class="inline-btn save" onclick="updateEngineer(${e.id})"><i class="bi bi-check2-circle"></i> Хадгалах</button>
+              <button class="inline-btn delete" onclick="deleteEngineer(${e.id})"><i class="bi bi-trash3"></i> Идэвхгүй болгох</button>
+            </div>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function getSelectedEngineerIds() {
+      return Array.from(document.querySelectorAll("#engList input[type=checkbox]:checked"))
+        .map(x => parseInt(x.value, 10));
+    }
+
+    function resetSelection() {
+      selectedDates.clear();
+      if (calendar) {
+        calendar.unselect();
+      }
+
+      document
+        .querySelectorAll("#engList input[type=checkbox]")
+        .forEach(cb => {
+          cb.checked = false;
+        });
+    }
+
+    async function bulkAssign() {
+      const engineer_ids = getSelectedEngineerIds();
+      const dates = Array.from(selectedDates);
+      if (!engineer_ids.length || !dates.length) {
+        alert("Эхлээд инженер болон өдрүүдээ сонгоно уу.");
+        return;
+      }
+
+      const res = await fetch("/admin/api/assignments/bulk_add", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ engineer_ids, dates })
+      }).then(r => r.json());
+
+      alert(`Үүсгэсэн: ${res.created}`);
+      resetSelection();
+      calendar.refetchEvents();
+      loadStats();
+    }
+
+    async function bulkRemove() {
+      const engineer_ids = getSelectedEngineerIds();
+      const dates = Array.from(selectedDates);
+      if (!dates.length) {
+        alert("Эхлээд өдрүүдээ сонгоно уу.");
+        return;
+      }
+
+      const res = await fetch("/admin/api/assignments/bulk_remove", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ engineer_ids, dates })
+      }).then(r => r.json());
+
+      alert(`Хассан: ${res.removed}`);
+      resetSelection();
+      calendar.refetchEvents();
+      loadStats();
+    }
+
+    async function loadStats() {
+      const rows = await fetch("/admin/api/stats/last6months").then(r => r.json());
+      const box = document.getElementById("statsBox");
+      if (!rows.length) {
+        box.innerHTML = `<div class="muted">Мэдээлэл алга</div>`;
+        return;
+      }
+
+      box.innerHTML = rows.map(r => `
+        <div class="stat-item">
+          <strong>${r.first_name}</strong>
+          <span class="stat-badge">${r.days}</span>
+        </div>
+      `).join("");
+    }
+
+    async function addEngineer() {
+      const first_name = document.getElementById("new_name").value.trim();
+      const phone = document.getElementById("new_phone").value.trim();
+      const email = document.getElementById("new_email").value.trim();
+
+      if (!first_name || !email) {
+        alert("Нэр болон имэйл шаардлагатай");
+        return;
+      }
+
+      await fetch("/admin/api/engineers", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ first_name, phone, email })
+      });
+
+      document.getElementById("new_name").value = "";
+      document.getElementById("new_phone").value = "";
+      document.getElementById("new_email").value = "";
+
+      refreshEngineers();
+    }
+
+    async function updateEngineer(id) {
+      await fetch(`/admin/api/engineers/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          first_name: document.getElementById(`name_${id}`).value,
+          phone: document.getElementById(`phone_${id}`).value,
+          email: document.getElementById(`email_${id}`).value
+        })
+      });
+      alert("Хадгаллаа");
+    }
+
+    async function deleteEngineer(id) {
+      if (!confirm("Энэ инженерийг идэвхгүй болгох уу?")) {
+        return;
+      }
+      await fetch(`/admin/api/engineers/${id}`, { method: "DELETE" });
+      refreshEngineers();
+    }
+
+    document.addEventListener("DOMContentLoaded", async function() {
+      selectedDates.clear();
+      await refreshEngineers();
+      document.getElementById("search").addEventListener("input", renderEngineerList);
+      document.getElementById("clearSelectionBtn").addEventListener("click", resetSelection);
+
+      const calEl = document.getElementById("adminCal");
+      calendar = new FullCalendar.Calendar(calEl, {
+        eventContent: function(arg) {
+          const name = arg.event.title;
+          const phone = arg.event.extendedProps.phone;
+
+          const wrapper = document.createElement("div");
+          wrapper.style.fontSize = "12px";
+          wrapper.style.lineHeight = "1.2";
+
+          const nameDiv = document.createElement("div");
+          nameDiv.textContent = name;
+          nameDiv.style.fontWeight = "700";
+          wrapper.appendChild(nameDiv);
+
+          if (phone) {
+            const phoneDiv = document.createElement("div");
+            phoneDiv.textContent = phone;
+            phoneDiv.style.fontSize = "11px";
+            phoneDiv.style.opacity = "0.9";
+            wrapper.appendChild(phoneDiv);
+          }
+
+          return { domNodes: [wrapper] };
+        },
+        initialView: "dayGridMonth",
+        height: "auto",
+        selectable: true,
+        selectMirror: true,
+        select: function(info) {
+          selectedDates.clear();
+          let d = new Date(info.start);
+          while (d < info.end) {
+            selectedDates.add(d.toLocaleDateString("en-CA"));
+            d.setDate(d.getDate() + 1);
+          }
+        },
+        unselectAuto: false,
+        events: "/api/public/assignments"
+      });
+
+      calendar.render();
+      loadStats();
+    });
+  </script>
 </body>
 </html>

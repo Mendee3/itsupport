@@ -10,11 +10,23 @@ db = SQLAlchemy()
 login_manager = LoginManager()
 login_manager.login_view = "admin.login"
 
+
+def resolve_database_uri():
+    uri = os.environ.get("DATABASE_URL", "").strip()
+    if not uri:
+        return f"sqlite:///{DB_PATH}"
+
+    # Some platforms expose postgres:// which SQLAlchemy 2 rejects.
+    if uri.startswith("postgres://"):
+        return "postgresql://" + uri[len("postgres://"):]
+
+    return uri
+
 def create_app():
     from werkzeug.middleware.proxy_fix import ProxyFix
     app = Flask(__name__)
     app.config["SECRET_KEY"] = "CHANGE_ME_TO_RANDOM_LONG_STRING"
-    app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{DB_PATH}"
+    app.config["SQLALCHEMY_DATABASE_URI"] = resolve_database_uri()
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
 

@@ -1,230 +1,659 @@
 <!doctype html>
-<html>
+<html lang="mn">
 <head>
   <meta charset="utf-8">
-  <title>On-call Calendar</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Жижүүрийн самбар</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
   <style>
-    .muted-month { opacity: 0.45; }
-      /* Default desktop */
-      body {
-        font-size: 15px;
+    :root {
+      --page-bg: #f4f6fb;
+      --card-bg: #ffffff;
+      --card-border: #dfe5f1;
+      --text-main: #1f2a44;
+      --text-soft: #6d7892;
+      --blue: #1f66e5;
+      --blue-dark: #1653c1;
+      --green: #27a857;
+      --green-dark: #1d8d49;
+      --shadow: 0 10px 24px rgba(24, 47, 94, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background:
+        radial-gradient(circle at top right, rgba(31, 102, 229, 0.08), transparent 26%),
+        linear-gradient(180deg, #f9fbff 0%, var(--page-bg) 100%);
+      color: var(--text-main);
+    }
+
+    .dashboard {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 20px 18px 32px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .topbar h1 {
+      margin: 0;
+      font-size: clamp(1.45rem, 3vw, 2.2rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    .ticket-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      border: 0;
+      border-radius: 12px;
+      padding: 12px 18px;
+      background: linear-gradient(180deg, #2e78f7 0%, var(--blue) 100%);
+      color: #fff;
+      font-size: 1.1rem;
+      font-weight: 700;
+      box-shadow: 0 8px 18px rgba(31, 102, 229, 0.25);
+      cursor: default;
+    }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.15fr) minmax(320px, 1fr);
+      gap: 16px;
+      align-items: start;
+    }
+
+    .panel {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+    }
+
+    .hero-card {
+      padding: 22px 26px 18px;
+    }
+
+    .hero-main {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 18px;
+      align-items: center;
+    }
+
+    .avatar {
+      width: 92px;
+      height: 92px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: 2rem;
+      font-weight: 800;
+      color: #fff;
+      background: linear-gradient(145deg, #6f86a8, #3f587f);
+      box-shadow: inset 0 0 0 3px rgba(255, 255, 255, 0.16);
+    }
+
+    .hero-title {
+      margin: 0;
+      font-size: clamp(1.4rem, 2vw, 2rem);
+      font-weight: 800;
+    }
+
+    .hero-subtitle {
+      margin: 4px 0 0;
+      color: var(--text-soft);
+      font-size: 1.15rem;
+    }
+
+    .contact-list,
+    .detail-list,
+    .checklist {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .contact-list li,
+    .detail-list li {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 0;
+      border-top: 1px solid #ebeff6;
+      font-size: 1.05rem;
+    }
+
+    .contact-list li:first-child,
+    .detail-list li:first-child {
+      margin-top: 10px;
+    }
+
+    .contact-list a {
+      color: var(--blue);
+      text-decoration: none;
+      font-weight: 700;
+    }
+
+    .detail-list strong {
+      font-size: 1.1rem;
+    }
+
+    .status-badge {
+      margin-top: 14px;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      border-radius: 10px;
+      background: linear-gradient(180deg, var(--green) 0%, var(--green-dark) 100%);
+      color: #fff;
+      font-size: 1.3rem;
+      font-weight: 800;
+      text-align: center;
+    }
+
+    .hero-actions {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .action-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 12px 14px;
+      border-radius: 10px;
+      background: linear-gradient(180deg, #2e78f7 0%, var(--blue-dark) 100%);
+      color: #fff;
+      text-decoration: none;
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+
+    .side-stack {
+      display: grid;
+      gap: 12px;
+    }
+
+    .mini-card {
+      padding: 18px 18px 16px;
+    }
+
+    .mini-card h2,
+    .checklist-panel h2,
+    .schedule-section h2 {
+      margin: 0 0 12px;
+      font-size: 1.25rem;
+      font-weight: 800;
+    }
+
+    .mini-person {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 12px;
+      align-items: center;
+      border-top: 1px solid #ebeff6;
+      padding-top: 12px;
+    }
+
+    .mini-avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(145deg, #6f86a8, #3f587f);
+      color: #fff;
+      font-size: 0.95rem;
+      font-weight: 800;
+    }
+
+    .mini-name {
+      font-size: 1.05rem;
+      font-weight: 800;
+      line-height: 1.2;
+    }
+
+    .mini-meta {
+      font-size: 0.98rem;
+      color: var(--text-main);
+    }
+
+    .checklist-panel {
+      padding: 18px;
+    }
+
+    .checklist li {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      padding: 8px 0;
+      border-top: 1px solid #ebeff6;
+      font-size: 1.02rem;
+    }
+
+    .checklist li:first-child {
+      padding-top: 12px;
+    }
+
+    .checklist i {
+      color: var(--green);
+      font-size: 1.1rem;
+      line-height: 1.4;
+    }
+
+    .schedule-section {
+      margin-top: 18px;
+    }
+
+    .schedule-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .nav-btn {
+      border: 1px solid #c9d6ef;
+      background: #fff;
+      color: var(--blue-dark);
+      border-radius: 12px;
+      padding: 10px 16px;
+      font-weight: 700;
+      box-shadow: var(--shadow);
+    }
+
+    .nav-btn.active {
+      background: linear-gradient(180deg, #2e78f7 0%, var(--blue-dark) 100%);
+      color: #fff;
+      border-color: transparent;
+    }
+
+    .week-grid {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(120px, 1fr));
+      gap: 0;
+      overflow: hidden;
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      box-shadow: var(--shadow);
+      background: #fff;
+    }
+
+    .day-card {
+      min-height: 136px;
+      padding: 10px 12px 12px;
+      border-right: 1px solid #e7edf8;
+      background: linear-gradient(180deg, #ffffff 0%, #f9fbff 100%);
+    }
+
+    .day-card:last-child {
+      border-right: 0;
+    }
+
+    .day-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 8px;
+      padding-bottom: 10px;
+      margin-bottom: 10px;
+      border-bottom: 1px solid #edf2fb;
+      font-weight: 800;
+    }
+
+    .day-date {
+      color: var(--text-soft);
+    }
+
+    .shift-entry {
+      margin-top: 6px;
+    }
+
+    .shift-name {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 800;
+    }
+
+    .shift-name i {
+      color: var(--green);
+    }
+
+    .shift-time {
+      margin-top: 4px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .shift-phone {
+      margin-top: 4px;
+      color: var(--text-soft);
+      font-size: 0.95rem;
+    }
+
+    .empty-state {
+      color: var(--text-soft);
+      font-size: 0.98rem;
+    }
+
+    .today-highlight {
+      background: linear-gradient(180deg, #eef5ff 0%, #f9fbff 100%);
+    }
+
+    @media (max-width: 991px) {
+      .dashboard-grid {
+        grid-template-columns: 1fr;
       }
-      .fc {
-        font-size: 1em;
+
+      .week-grid {
+        grid-template-columns: 1fr;
       }
-      #todayBox {
-        font-size: 0.95em;
+
+      .day-card {
+        border-right: 0;
+        border-bottom: 1px solid #e7edf8;
       }
-      /* Large monitors / wallboards */
-      @media (min-width: 1600px) {
-        body {
-          font-size: 18px;
-        }
-        .fc {
-          font-size: 1.15em;
-        }
-        #todayBox {
-          font-size: 1.05em;
-        }
-        h3 {
-          font-size: 1.8rem;
-        }
+
+      .day-card:last-child {
+        border-bottom: 0;
       }
+    }
+
+    @media (max-width: 640px) {
+      .dashboard {
+        padding: 16px 12px 28px;
+      }
+
+      .topbar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .ticket-btn {
+        justify-content: center;
+      }
+
+      .hero-card {
+        padding: 18px 16px 16px;
+      }
+
+      .hero-main {
+        grid-template-columns: 1fr;
+        text-align: center;
+      }
+
+      .avatar {
+        margin: 0 auto;
+      }
+
+      .contact-list li,
+      .detail-list li {
+        font-size: 1rem;
+      }
+
+      .hero-actions {
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
 </head>
-<body class="bg-light">
-<div class="container py-4">
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h3 class="mb-0">IT Support-н амралтын өдрөөр ажиллах инженерийн хуваарь</h3>
-    <!--<a class="btn btn-outline-secondary btn-sm" href="/itsupport/admin">Admin</a> -->
-  </div>
+<body>
+  <main class="dashboard">
+    <section class="topbar">
+      <h1>Одоо жижүүрт байгаа инженер</h1>
+      <a
+        class="ticket-btn"
+        aria-label="Тикет бүртгэх"
+        href="https://apps.powerapps.com/play/e/default-e80e02a9-6786-49c1-8319-263f690e555a/a/994aea1a-9ea8-41b0-9874-229f81350e12?tenantId=e80e02a9-6786-49c1-8319-263f690e555a&hint=5bd2564f-d7e9-4b33-bcbb-62f79bd965bc&sourcetime=1773754221427&source=portal"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <i class="bi bi-ticket-perforated-fill"></i>
+        <span>Ticket бүртгэх</span>
+      </a>
+    </section>
 
-  <div class="row g-3">
-    <div class="col-lg-8">
-      <div class="card shadow-sm">
-        <div class="card-body">
-          <div id="calCurrent"></div>
+    <section class="dashboard-grid">
+      <article class="panel hero-card">
+        <div id="primaryCard"></div>
+      </article>
+
+      <div class="side-stack">
+        <article class="panel mini-card">
+          <h2>Нөөц инженер</h2>
+          <div id="backupCard"></div>
+        </article>
+
+        <article class="panel checklist-panel">
+          <h2>Холбогдохоос өмнө шалгах зүйлс</h2>
+          <ul class="checklist">
+            <li><i class="bi bi-check-square-fill"></i><span>Системийн асуудал тодорхойлсон</span></li>
+            <li><i class="bi bi-check-square-fill"></i><span>Screenshot авсан</span></li>
+            <li><i class="bi bi-check-square-fill"></i><span>Алдааны мэдээлэл тэмдэглэсэн</span></li>
+            <li><i class="bi bi-check-square-fill"></i><span>Интернет болон VPN шалгасан</span></li>
+            <li><i class="bi bi-check-square-fill"></i><span>Бусад төхөөрөмж дээр туршсан</span></li>
+            <li><i class="bi bi-check-square-fill"></i><span>Device / Browser мэдээлэл тэмдэглэсэн</span></li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section class="schedule-section">
+      <div class="schedule-toolbar">
+        <h2>Энэ 7 хоногийн жижүүрийн хуваарь</h2>
+        <div class="d-flex gap-2 flex-wrap">
+          <button id="prevWeek" type="button" class="nav-btn"><i class="bi bi-arrow-left"></i> Өмнөх 7 хоног</button>
+          <button id="currentWeek" type="button" class="nav-btn active">Энэ 7 хоног</button>
+          <button id="nextWeek" type="button" class="nav-btn">Дараагийн 7 хоног <i class="bi bi-arrow-right"></i></button>
         </div>
       </div>
-    </div>
+      <div id="weekGrid" class="week-grid"></div>
+    </section>
+  </main>
 
-    <div class="col-lg-4">
-      <div class="card shadow-sm">
-        <div class="card-body">
-          <h5>Өнөөдрийн хуваарь</h5>
-          <div id="todayBox" class="text-muted">Loading…</div>
-        </div>
-      </div>
-	<div class="card shadow-sm mt-3">
-  <div class="card-body">
-    <h5 class="mb-3">IT Support руу хандахаас өмнө</h5>
+  <script>
+    const weekdayNames = ["Ням", "Даваа", "Мягмар", "Лхагва", "Пүрэв", "Баасан", "Бямба"];
+    const currentWeekButton = document.getElementById("currentWeek");
+    const prevWeekButton = document.getElementById("prevWeek");
+    const nextWeekButton = document.getElementById("nextWeek");
+    const primaryCard = document.getElementById("primaryCard");
+    const backupCard = document.getElementById("backupCard");
+    const weekGrid = document.getElementById("weekGrid");
+    const today = new Date();
+    let weekOffset = 0;
 
-    <div class="mb-3">
-      <strong>Доорх жагсаалтанд байгаа зүйлс болохгүй байвал холбогдоорой:</strong>
-      <ul class="mb-2">
-        <li>Систем рүү нэвтэрч чадахгүй байвал</li>
-        <li>Систем асахгүй, ажиллахгүй байвал</li>
-        <li>Сүлжээ болон системийн нууцлал, эвдрэл, гэмтэл байвал</li>
-        <li>POS машинаас болж, хэрэглэгчидэд үзүүлэх үйлчилгээнд нөлөөлж байвал</li>
-      </ul>
-    </div>
-
-    <div class="mb-3">
-      <strong>Эхлээд доорх жагсаалтаас шалгаж үзнэ үү:</strong>
-      <ul class="mb-2">
-        <li>POS унтрааж асаах</li>
-        <li>Интернет холболтоо шалгах</li>
-        <li>Хэрэглэгчийн нэр, нууц үгээ зөв оруулж байгааг нягтлах</li>
-        <li>Байгууллагын өөрчлөлт хийгдэж байгаа и-мэйл болон мэдээ мэдээллийг нягтлах</li>
-        <li>Цахилгааны залгуур болон төхөөрөмжтэй холбогдож байгаа залгуурууд</li>
-      </ul>
-    </div>
-
-    <div class="mb-3">
-      <strong>IT доорх үед дэмжлэг үзүүлэхгүй:</strong>
-      <ul class="mb-2">
-        <li>Хувь хүний мэдээлэл гаргах</li>
-        <li>Ажлын бус компьютер, утас, таблеттай холбоотой бол</li>
-        <li>Залгуур болон тог цахилгаанаас үүдэлтэй гэмтэлтэй бол</li>
-      </ul>
-    </div>
-
-    <div class="alert alert-secondary mb-0 small">
-      <strong>Жич:</strong> Screenshot болон алдааны мессежийг хэлж өгвөл оновчтойгоор, хурдан арга хэмжээ авах боломжтой.
-    </div>
-  </div>
-</div>
-
-    </div>
-  </div>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/locales-all.global.min.js"></script>
-<script>
-function tooltipContent(info){
-  const p = info.event.extendedProps;
-  return `${p.first_name}<br>${p.phone}<br>${p.email}`;
-}
-
-async function loadToday(){
-  const now = new Date();
-  const today = now.toLocaleDateString('en-CA'); // YYYY-MM-DD
-
-  const url = `/api/public/assignments?date=${today}`;
-  const data = await fetch(url).then(r=>r.json());
-
-  const box = document.getElementById("todayBox");
-  if(!data.length){
-    box.innerHTML = "<span class='text-muted'>No assignment today.</span>";
-    return;
-  }
-  box.innerHTML = data.map(ev => {
-    return `<div class="mb-2"><strong>${ev.extendedProps.first_name}</strong><br>${ev.extendedProps.phone}<br>${ev.extendedProps.email}</div>`;
-  }).join("");
-}
-
-function renderEventWithPhone(arg){
-  const name = arg.event.title;
-  const phone = arg.event.extendedProps.phone;
-
-  const wrap = document.createElement("div");
-  wrap.style.fontSize = "12px";
-  wrap.style.lineHeight = "1.2";
-
-  const nameDiv = document.createElement("div");
-  nameDiv.textContent = name;
-  nameDiv.style.fontWeight = "600";
-  wrap.appendChild(nameDiv);
-
-  if (phone) {
-    const phoneDiv = document.createElement("div");
-    phoneDiv.textContent = phone;
-    phoneDiv.style.fontSize = "11px";
-    phoneDiv.style.opacity = "0.75";
-    wrap.appendChild(phoneDiv);
-  }
-
-  return { domNodes: [wrap] };
-}
-
-function shouldShowNextMonthPreview(){
-  const now = new Date();
-  const lastDay = new Date(now.getFullYear(), now.getMonth()+1, 0);
-  const diffDays = Math.ceil((lastDay - now) / (1000*60*60*24));
-  return diffDays <= 14;
-}
-
-function refreshPublicData(){
-  // refresh main calendar
-  if (window.cal) {
-    cal.refetchEvents();
-  }
-
-  // refresh Today widget
-  loadToday();
-}
-
-document.addEventListener('DOMContentLoaded', async function() {
-  const calEl = document.getElementById('calCurrent');
-
-  window.cal = new FullCalendar.Calendar(calEl, {
-    initialView: 'dayGridMonth',
-    firstDay: 1,     // Monday
-    locale: 'mn',    // Mongolian
-    height: "auto",
-    eventContent: renderEventWithPhone,
-    events: "/api/public/assignments",
-    eventMouseEnter: function(info){
-      const tip = document.createElement("div");
-      tip.className = "position-fixed p-2 bg-dark text-white rounded small";
-      tip.style.zIndex = 9999;
-      tip.innerHTML = tooltipContent(info);
-      document.body.appendChild(tip);
-
-      function move(e){
-        tip.style.left = (e.clientX + 12) + "px";
-        tip.style.top = (e.clientY + 12) + "px";
-      }
-      move(info.jsEvent);
-      info.el._tip = tip;
-      info.el._move = move;
-      document.addEventListener("mousemove", move);
-    },
-    eventMouseLeave: function(info){
-      if(info.el._tip) info.el._tip.remove();
-      if(info.el._move) document.removeEventListener("mousemove", info.el._move);
+    function isoDate(date) {
+      const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+      return local.toISOString().slice(0, 10);
     }
-  });
 
-  cal.render();
-  await loadToday();
+    function startOfWeek(date) {
+      const copy = new Date(date);
+      const day = copy.getDay();
+      const diff = day === 0 ? -6 : 1 - day;
+      copy.setDate(copy.getDate() + diff);
+      copy.setHours(0, 0, 0, 0);
+      return copy;
+    }
 
-  if(shouldShowNextMonthPreview()){
-    document.getElementById("nextMonthWrap").classList.remove("d-none");
-    const nextEl = document.getElementById("calNext");
-    const now = new Date();
-    const next = new Date(now.getFullYear(), now.getMonth()+1, 1);
+    function addDays(date, days) {
+      const copy = new Date(date);
+      copy.setDate(copy.getDate() + days);
+      return copy;
+    }
 
-    const cal2 = new FullCalendar.Calendar(nextEl, {
-      initialView: 'dayGridMonth',
-      height: "auto",
-      initialDate: next,
-      headerToolbar: false,
-      eventContent: renderEventWithPhone,
-      events: "/api/public/assignments",
-      eventMouseEnter: cal.getOption("eventMouseEnter"),
-      eventMouseLeave: cal.getOption("eventMouseLeave")
+    function initials(name) {
+      const parts = (name || "").trim().split(/\s+/).filter(Boolean);
+      if (!parts.length) return "IT";
+      if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+
+    function normalizePerson(event) {
+      const p = event.extendedProps || {};
+      const name = p.first_name || event.title || "Инженер";
+      return {
+        name,
+        phone: p.phone || "Мэдээлэлгүй",
+        email: p.email || "Мэдээлэлгүй",
+        initials: initials(name)
+      };
+    }
+
+    async function fetchAssignments(params) {
+      const response = await fetch(`/api/public/assignments?${params}`);
+      return response.json();
+    }
+
+    function renderPrimary(person) {
+      if (!person) {
+        primaryCard.innerHTML = `
+          <div class="hero-main">
+            <div class="avatar">IT</div>
+            <div>
+              <h2 class="hero-title">Жижүүрийн мэдээлэл алга</h2>
+              <p class="hero-subtitle">Өнөөдрийн инженер хуваарилагдаагүй байна.</p>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      primaryCard.innerHTML = `
+        <div class="hero-main">
+          <div class="avatar">${person.initials}</div>
+          <div>
+            <h2 class="hero-title">${person.name}</h2>
+            <p class="hero-subtitle">Ахлах инженер - Мэдээллийн технологи</p>
+            <ul class="contact-list">
+              <li><i class="bi bi-telephone-fill text-primary"></i><a href="tel:${person.phone}">${person.phone}</a></li>
+              <li><i class="bi bi-envelope-fill text-primary"></i><a href="mailto:${person.email}">${person.email}</a></li>
+            </ul>
+            <ul class="detail-list">
+              <li><strong>Хариуцсан:</strong>&nbsp;<span>Сүлжээ, Сервер, Систем</span></li>
+              <li><strong>Ээлж:</strong>&nbsp;<span>09:00 - 18:00</span></li>
+            </ul>
+            <div class="status-badge"><i class="bi bi-check-circle-fill"></i><span>Одоо жижүүрт байна</span></div>
+            <div class="hero-actions">
+              <a class="action-btn" href="tel:${person.phone}"><i class="bi bi-telephone-fill"></i><span>Залгах</span></a>
+              <a class="action-btn" href="mailto:${person.email}"><i class="bi bi-envelope-fill"></i><span>Имэйл</span></a>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderBackup(person) {
+      if (!person) {
+        backupCard.innerHTML = `<div class="empty-state">Өнөөдөр backup engineer хуваарилагдаагүй байна.</div>`;
+        return;
+      }
+
+      backupCard.innerHTML = `
+        <div class="mini-person">
+          <div class="mini-avatar">${person.initials}</div>
+          <div>
+            <div class="mini-name">${person.name}</div>
+            <div class="mini-meta">${person.phone}</div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderWeek(days) {
+      weekGrid.innerHTML = days.map(day => {
+        const people = day.people;
+        const content = people.length ? people.map(person => `
+          <div class="shift-entry">
+            <div class="shift-name"><i class="bi bi-check-square-fill"></i><span>${person.name}</span></div>
+            <div class="shift-time">09:00 - 18:00</div>
+            <div class="shift-phone">${person.phone}</div>
+          </div>
+        `).join("") : `<div class="empty-state">Хуваарьгүй</div>`;
+
+        return `
+          <article class="day-card ${day.isToday ? "today-highlight" : ""}">
+            <div class="day-head">
+              <span>${day.label}</span>
+              <span class="day-date">${day.monthDay}</span>
+            </div>
+            ${content}
+          </article>
+        `;
+      }).join("");
+    }
+
+    async function loadDashboard() {
+      const exactDay = isoDate(today);
+      const todayAssignments = await fetchAssignments(`date=${exactDay}`);
+      const todayPeople = todayAssignments.map(normalizePerson);
+      renderPrimary(todayPeople[0] || null);
+      renderBackup(todayPeople[1] || null);
+
+      const weekStart = addDays(startOfWeek(today), weekOffset * 7);
+      const weekDays = Array.from({ length: 7 }, (_, index) => addDays(weekStart, index));
+      const rangeStart = isoDate(weekDays[0]);
+      const rangeEnd = isoDate(addDays(weekDays[6], 1));
+      const weekAssignments = await fetchAssignments(`start=${rangeStart}&end=${rangeEnd}`);
+
+      const byDate = new Map();
+      weekAssignments.forEach(event => {
+        const key = event.start;
+        if (!byDate.has(key)) byDate.set(key, []);
+        byDate.get(key).push(normalizePerson(event));
+      });
+
+      renderWeek(weekDays.map(date => {
+        const key = isoDate(date);
+        return {
+          label: weekdayNames[date.getDay()],
+          monthDay: `${date.getMonth() + 1}/${date.getDate()}`,
+          people: byDate.get(key) || [],
+          isToday: key === exactDay
+        };
+      }));
+
+      currentWeekButton.classList.toggle("active", weekOffset === 0);
+    }
+
+    prevWeekButton.addEventListener("click", async () => {
+      weekOffset -= 1;
+      await loadDashboard();
     });
-    cal2.render();
-  }
 
-  // auto refresh every 10 minutes
-  setInterval(refreshPublicData, 10 * 60 * 1000);
+    nextWeekButton.addEventListener("click", async () => {
+      weekOffset += 1;
+      await loadDashboard();
+    });
 
-});
-</script>
+    currentWeekButton.addEventListener("click", async () => {
+      weekOffset = 0;
+      await loadDashboard();
+    });
+
+    loadDashboard();
+  </script>
 </body>
 </html>
