@@ -24,8 +24,12 @@ def load_user(user_id):
 class Engineer(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     first_name = db.Column(db.String(80), nullable=False)
+    position = db.Column(db.String(120), nullable=True)
     phone = db.Column(db.String(40), nullable=False)
     email = db.Column(db.String(120), nullable=False)
+    shift_start = db.Column(db.String(20), nullable=True)
+    shift_end = db.Column(db.String(20), nullable=True)
+    responsibilities = db.Column(db.String(255), nullable=True)
     active = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 

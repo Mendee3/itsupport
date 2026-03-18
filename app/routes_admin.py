@@ -43,7 +43,16 @@ def dashboard():
 def api_engineers():
     engineers = Engineer.query.filter_by(active=True).order_by(Engineer.first_name).all()
     return jsonify([
-        {"id": e.id, "first_name": e.first_name, "phone": e.phone, "email": e.email}
+        {
+            "id": e.id,
+            "first_name": e.first_name,
+            "position": e.position or "",
+            "phone": e.phone,
+            "email": e.email,
+            "shift_start": e.shift_start or "",
+            "shift_end": e.shift_end or "",
+            "responsibilities": e.responsibilities or "",
+        }
         for e in engineers
     ])
 
@@ -51,10 +60,17 @@ def api_engineers():
 @login_required
 def api_add_engineer():
     data = request.json
+    shift_start = (data.get("shift_start") or "").strip() or "19:00"
+    shift_end = (data.get("shift_end") or "").strip() or "07:00"
+
     e = Engineer(
         first_name=data["first_name"].strip(),
+        position=(data.get("position") or "").strip() or None,
         phone=data["phone"].strip(),
         email=data["email"].strip(),
+        shift_start=shift_start,
+        shift_end=shift_end,
+        responsibilities=(data.get("responsibilities") or "").strip() or None,
         active=True
     )
     db.session.add(e)
@@ -134,6 +150,14 @@ def api_update_engineer(engineer_id):
         e.phone = data["phone"].strip()
     if "email" in data:
         e.email = data["email"].strip()
+    if "position" in data:
+        e.position = data["position"].strip() or None
+    if "shift_start" in data:
+        e.shift_start = data["shift_start"].strip() or "19:00"
+    if "shift_end" in data:
+        e.shift_end = data["shift_end"].strip() or "07:00"
+    if "responsibilities" in data:
+        e.responsibilities = data["responsibilities"].strip() or None
 
     db.session.commit()
     return jsonify({"ok": True})
@@ -147,4 +171,3 @@ def api_delete_engineer(engineer_id):
     db.session.commit()
 
     return jsonify({"ok": True})
-

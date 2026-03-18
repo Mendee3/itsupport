@@ -461,12 +461,28 @@
               <input id="new_name" placeholder="Нэр">
             </label>
             <label class="field">
+              <i class="bi bi-briefcase"></i>
+              <input id="new_position" placeholder="Албан тушаал">
+            </label>
+            <label class="field">
               <i class="bi bi-telephone"></i>
               <input id="new_phone" placeholder="Утас">
             </label>
             <label class="field">
               <i class="bi bi-envelope"></i>
               <input id="new_email" placeholder="Имэйл">
+            </label>
+            <label class="field">
+              <i class="bi bi-clock"></i>
+              <input id="new_shift_start" placeholder="Ээлж эхлэх цаг" value="19:00">
+            </label>
+            <label class="field">
+              <i class="bi bi-clock-history"></i>
+              <input id="new_shift_end" placeholder="Ээлж дуусах цаг" value="07:00">
+            </label>
+            <label class="field">
+              <i class="bi bi-diagram-3"></i>
+              <input id="new_responsibilities" placeholder="Хариуцах чиглэл">
             </label>
             <button class="primary-btn" onclick="addEngineer()"><i class="bi bi-plus-circle"></i> Инженер нэмэх</button>
           </div>
@@ -530,8 +546,12 @@
           <input class="form-check-input engineer-check" type="checkbox" value="${e.id}" id="eng_${e.id}">
           <div class="engineer-fields">
             <input value="${e.first_name}" id="name_${e.id}" aria-label="Name ${e.first_name}">
+            <input value="${e.position || ""}" id="position_${e.id}" aria-label="Албан тушаал ${e.first_name}" placeholder="Албан тушаал">
             <input value="${e.phone}" id="phone_${e.id}" aria-label="Утас ${e.first_name}">
             <input value="${e.email}" id="email_${e.id}" aria-label="Имэйл ${e.first_name}">
+            <input value="${e.shift_start || ""}" id="shift_start_${e.id}" aria-label="Ээлж эхлэх ${e.first_name}" placeholder="Ээлж эхлэх цаг">
+            <input value="${e.shift_end || ""}" id="shift_end_${e.id}" aria-label="Ээлж дуусах ${e.first_name}" placeholder="Ээлж дуусах цаг">
+            <input value="${e.responsibilities || ""}" id="responsibilities_${e.id}" aria-label="Хариуцах чиглэл ${e.first_name}" placeholder="Хариуцах чиглэл">
             <div class="engineer-actions">
               <button class="inline-btn save" onclick="updateEngineer(${e.id})"><i class="bi bi-check2-circle"></i> Хадгалах</button>
               <button class="inline-btn delete" onclick="deleteEngineer(${e.id})"><i class="bi bi-trash3"></i> Идэвхгүй болгох</button>
@@ -617,8 +637,12 @@
 
     async function addEngineer() {
       const first_name = document.getElementById("new_name").value.trim();
+      const position = document.getElementById("new_position").value.trim();
       const phone = document.getElementById("new_phone").value.trim();
       const email = document.getElementById("new_email").value.trim();
+      const shift_start = document.getElementById("new_shift_start").value.trim();
+      const shift_end = document.getElementById("new_shift_end").value.trim();
+      const responsibilities = document.getElementById("new_responsibilities").value.trim();
 
       if (!first_name || !email) {
         alert("Нэр болон имэйл шаардлагатай");
@@ -628,12 +652,16 @@
       await fetch("/admin/api/engineers", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ first_name, phone, email })
+        body: JSON.stringify({ first_name, position, phone, email, shift_start, shift_end, responsibilities })
       });
 
       document.getElementById("new_name").value = "";
+      document.getElementById("new_position").value = "";
       document.getElementById("new_phone").value = "";
       document.getElementById("new_email").value = "";
+      document.getElementById("new_shift_start").value = "";
+      document.getElementById("new_shift_end").value = "";
+      document.getElementById("new_responsibilities").value = "";
 
       refreshEngineers();
     }
@@ -644,8 +672,12 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           first_name: document.getElementById(`name_${id}`).value,
+          position: document.getElementById(`position_${id}`).value,
           phone: document.getElementById(`phone_${id}`).value,
-          email: document.getElementById(`email_${id}`).value
+          email: document.getElementById(`email_${id}`).value,
+          shift_start: document.getElementById(`shift_start_${id}`).value,
+          shift_end: document.getElementById(`shift_end_${id}`).value,
+          responsibilities: document.getElementById(`responsibilities_${id}`).value
         })
       });
       alert("Хадгаллаа");

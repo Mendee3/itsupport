@@ -53,8 +53,12 @@ def public_assignments():
             "allDay": True,
             "extendedProps": {
                 "first_name": e.first_name,
+                "position": e.position,
                 "phone": e.phone,
-                "email": e.email
+                "email": e.email,
+                "shift_start": e.shift_start,
+                "shift_end": e.shift_end,
+                "responsibilities": e.responsibilities,
             }
         })
 

@@ -148,6 +148,15 @@
       font-weight: 700;
     }
 
+    .contact-link {
+      border: 0;
+      padding: 0;
+      background: transparent;
+      color: var(--blue);
+      text-decoration: none;
+      font-weight: 700;
+    }
+
     .detail-list strong {
       font-size: 1.1rem;
     }
@@ -165,6 +174,8 @@
       font-size: 1.3rem;
       font-weight: 800;
       text-align: center;
+      border: 0;
+      width: 100%;
     }
 
     .hero-actions {
@@ -362,6 +373,95 @@
       background: linear-gradient(180deg, #eef5ff 0%, #f9fbff 100%);
     }
 
+    .popup-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      background: rgba(17, 30, 56, 0.28);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+
+    .popup-backdrop.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .popup-card {
+      width: min(92vw, 520px);
+      padding: 22px 20px 18px;
+      border: 1px solid rgba(31, 102, 229, 0.18);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.99);
+      box-shadow: 0 22px 44px rgba(24, 47, 94, 0.2);
+      text-align: center;
+      transform: translateY(8px);
+      transition: transform 0.2s ease;
+    }
+
+    .popup-backdrop.show .popup-card {
+      transform: translateY(0);
+    }
+
+    .popup-label {
+      display: block;
+      color: var(--text-soft);
+      font-size: 0.95rem;
+      font-weight: 700;
+    }
+
+    .popup-value-row {
+      margin-top: 12px;
+    }
+
+    .popup-value-row {
+      display: block;
+      margin-top: 12px;
+    }
+
+    .popup-value {
+      display: block;
+      padding: 12px 14px;
+      border: 1px solid #d9e3f6;
+      border-radius: 12px;
+      background: #f7faff;
+      color: var(--blue-dark);
+      font-size: 1.15rem;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      word-break: break-word;
+    }
+
+    .popup-actions {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .popup-btn {
+      border: 0;
+      border-radius: 12px;
+      padding: 11px 14px;
+      font-weight: 700;
+      box-shadow: var(--shadow);
+    }
+
+    .popup-btn.copy {
+      background: linear-gradient(180deg, #2e78f7 0%, var(--blue-dark) 100%);
+      color: #fff;
+    }
+
+    .popup-btn.close {
+      background: #eef3ff;
+      color: var(--blue-dark);
+    }
+
     @media (max-width: 991px) {
       .dashboard-grid {
         grid-template-columns: 1fr;
@@ -420,19 +520,31 @@
   </style>
 </head>
 <body>
+  <div id="popupBackdrop" class="popup-backdrop" role="dialog" aria-modal="true" aria-live="polite" aria-hidden="true">
+    <div class="popup-card">
+      <span id="popupLabel" class="popup-label"></span>
+      <div class="popup-value-row">
+        <span id="popupValue" class="popup-value"></span>
+      </div>
+      <div class="popup-actions">
+        <button id="closeButton" type="button" class="popup-btn close">Хаах</button>
+        <button id="secondaryCopyButton" type="button" class="popup-btn copy"><i class="bi bi-copy"></i> Хуулах</button>
+      </div>
+    </div>
+  </div>
   <main class="dashboard">
     <section class="topbar">
       <h1>Одоо жижүүрт байгаа инженер</h1>
-      <a
+      <button
+        type="button"
+        id="ticketButton"
         class="ticket-btn"
         aria-label="Тикет бүртгэх"
-        href="https://apps.powerapps.com/play/e/default-e80e02a9-6786-49c1-8319-263f690e555a/a/994aea1a-9ea8-41b0-9874-229f81350e12?tenantId=e80e02a9-6786-49c1-8319-263f690e555a&hint=5bd2564f-d7e9-4b33-bcbb-62f79bd965bc&sourcetime=1773754221427&source=portal"
-        target="_blank"
-        rel="noopener noreferrer"
+        onclick="openTicketApp()"
       >
         <i class="bi bi-ticket-perforated-fill"></i>
-        <span>Ticket бүртгэх</span>
-      </a>
+        <span>Тикет бүртгэх</span>
+      </button>
     </section>
 
     <section class="dashboard-grid">
@@ -441,20 +553,19 @@
       </article>
 
       <div class="side-stack">
-        <article class="panel mini-card">
-          <h2>Нөөц инженер</h2>
-          <div id="backupCard"></div>
-        </article>
-
         <article class="panel checklist-panel">
           <h2>Холбогдохоос өмнө шалгах зүйлс</h2>
           <ul class="checklist">
             <li><i class="bi bi-check-square-fill"></i><span>Системийн асуудал тодорхойлсон</span></li>
-            <li><i class="bi bi-check-square-fill"></i><span>Screenshot авсан</span></li>
-            <li><i class="bi bi-check-square-fill"></i><span>Алдааны мэдээлэл тэмдэглэсэн</span></li>
-            <li><i class="bi bi-check-square-fill"></i><span>Интернет болон VPN шалгасан</span></li>
-            <li><i class="bi bi-check-square-fill"></i><span>Бусад төхөөрөмж дээр туршсан</span></li>
-            <li><i class="bi bi-check-square-fill"></i><span>Device / Browser мэдээлэл тэмдэглэсэн</span></li>
+            <li><i class="bi bi-check-square-fill"></i><span>POS унтрааж асаах</span></li>
+            <li><i class="bi bi-check-square-fill"></i><span>Интернет холболтоо шалгах</span></li>
+            <li><i class="bi bi-check-square-fill"></i><span>Хэрэглэгчийн нэр, нууц үгээ зөв оруулж байгааг нягтлах</span></li>
+            <li><i class="bi bi-check-square-fill"></i><span>Цахилгааны залгуур болон төхөөрөмжтэй холбогдож байгаа залгуурууд</span></li>
+          </ul>
+          <h2 style="margin-top: 18px;">IT доорх үед дэмжлэг үзүүлэхгүй</h2>
+          <ul class="checklist">
+            <li><i class="bi bi-x-circle-fill text-danger"></i><span>Ажлын бус компьютер, утас, таблеттай холбоотой бол</span></li>
+            <li><i class="bi bi-x-circle-fill text-danger"></i><span>Залгуур болон тог цахилгаанаас үүдэлтэй гэмтэлтэй бол</span></li>
           </ul>
         </article>
       </div>
@@ -479,10 +590,16 @@
     const prevWeekButton = document.getElementById("prevWeek");
     const nextWeekButton = document.getElementById("nextWeek");
     const primaryCard = document.getElementById("primaryCard");
-    const backupCard = document.getElementById("backupCard");
     const weekGrid = document.getElementById("weekGrid");
+    const popupBackdrop = document.getElementById("popupBackdrop");
+    const popupLabel = document.getElementById("popupLabel");
+    const popupValue = document.getElementById("popupValue");
+    const closeButton = document.getElementById("closeButton");
+    const secondaryCopyButton = document.getElementById("secondaryCopyButton");
     const today = new Date();
+    const ticketUrl = "https://apps.powerapps.com/play/e/default-e80e02a9-6786-49c1-8319-263f690e555a/a/994aea1a-9ea8-41b0-9874-229f81350e12?tenantId=e80e02a9-6786-49c1-8319-263f690e555a&hint=5bd2564f-d7e9-4b33-bcbb-62f79bd965bc&sourcetime=1773754221427&source=portal";
     let weekOffset = 0;
+    let popupCurrentValue = "";
 
     function isoDate(date) {
       const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
@@ -516,8 +633,12 @@
       const name = p.first_name || event.title || "Инженер";
       return {
         name,
+        position: p.position || "Инженер - Мэдээллийн технологи",
         phone: p.phone || "Мэдээлэлгүй",
         email: p.email || "Мэдээлэлгүй",
+        shift_start: p.shift_start || "19:00",
+        shift_end: p.shift_end || "07:00",
+        responsibilities: p.responsibilities || "Сүлжээ, Сервер, Систем",
         initials: initials(name)
       };
     }
@@ -526,6 +647,61 @@
       const response = await fetch(`/api/public/assignments?${params}`);
       return response.json();
     }
+
+    function showTopNotice(label, value) {
+      popupCurrentValue = value;
+      popupLabel.textContent = label;
+      popupValue.textContent = value;
+      popupBackdrop.classList.add("show");
+      popupBackdrop.setAttribute("aria-hidden", "false");
+    }
+
+    function closePopup() {
+      popupBackdrop.classList.remove("show");
+      popupBackdrop.setAttribute("aria-hidden", "true");
+    }
+
+    async function copyPopupValue() {
+      if (!popupCurrentValue) {
+        return;
+      }
+
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(popupCurrentValue);
+        } else {
+          const textArea = document.createElement("textarea");
+          textArea.value = popupCurrentValue;
+          textArea.setAttribute("readonly", "");
+          textArea.style.position = "absolute";
+          textArea.style.left = "-9999px";
+          document.body.appendChild(textArea);
+          textArea.select();
+          textArea.setSelectionRange(0, textArea.value.length);
+          const copied = document.execCommand("copy");
+          document.body.removeChild(textArea);
+          if (!copied) {
+            throw new Error("copy_failed");
+          }
+        }
+        popupLabel.textContent = "Хуулагдлаа";
+      } catch (error) {
+        popupLabel.textContent = "Хуулах боломжгүй байна";
+      }
+    }
+
+    function openTicketApp() {
+      window.open(ticketUrl, "_blank", "noopener,noreferrer");
+    }
+
+    function openTeamsChat(email) {
+      const teamsUrl = `https://teams.microsoft.com/l/chat/0/0?users=${encodeURIComponent(email)}`;
+      window.location.href = teamsUrl;
+    }
+
+    window.openTicketApp = openTicketApp;
+    window.openTeamsChat = openTeamsChat;
+    window.showTopNotice = showTopNotice;
 
     function renderPrimary(person) {
       if (!person) {
@@ -546,37 +722,20 @@
           <div class="avatar">${person.initials}</div>
           <div>
             <h2 class="hero-title">${person.name}</h2>
-            <p class="hero-subtitle">Ахлах инженер - Мэдээллийн технологи</p>
+            <p class="hero-subtitle">${person.position}</p>
             <ul class="contact-list">
-              <li><i class="bi bi-telephone-fill text-primary"></i><a href="tel:${person.phone}">${person.phone}</a></li>
-              <li><i class="bi bi-envelope-fill text-primary"></i><a href="mailto:${person.email}">${person.email}</a></li>
+              <li><i class="bi bi-telephone-fill text-primary"></i><button type="button" class="contact-link" onclick="showTopNotice('Жижүүр инженерийн утас', '${person.phone}')">${person.phone}</button></li>
+              <li><i class="bi bi-envelope-fill text-primary"></i><button type="button" class="contact-link" onclick="showTopNotice('Жижүүр инженерийн имэйл', '${person.email}')">${person.email}</button></li>
             </ul>
             <ul class="detail-list">
-              <li><strong>Хариуцсан:</strong>&nbsp;<span>Сүлжээ, Сервер, Систем</span></li>
-              <li><strong>Ээлж:</strong>&nbsp;<span>09:00 - 18:00</span></li>
+              <li><strong>Хариуцсан:</strong>&nbsp;<span>${person.responsibilities}</span></li>
+              <li><strong>Ээлж:</strong>&nbsp;<span>${person.shift_start} - ${person.shift_end}</span></li>
             </ul>
-            <div class="status-badge"><i class="bi bi-check-circle-fill"></i><span>Одоо жижүүрт байна</span></div>
+            <button class="status-badge" type="button" onclick="openTeamsChat('${person.email}')"><i class="bi bi-chat-dots-fill"></i><span>Инженертэй чат эхлүүлэх</span></button>
             <div class="hero-actions">
-              <a class="action-btn" href="tel:${person.phone}"><i class="bi bi-telephone-fill"></i><span>Залгах</span></a>
-              <a class="action-btn" href="mailto:${person.email}"><i class="bi bi-envelope-fill"></i><span>Имэйл</span></a>
+              <button class="action-btn" type="button" onclick="showTopNotice('Жижүүр инженерийн утас', '${person.phone}')"><i class="bi bi-telephone-fill"></i><span>Залгах</span></button>
+              <button class="action-btn" type="button" onclick="showTopNotice('Жижүүр инженерийн имэйл', '${person.email}')"><i class="bi bi-envelope-fill"></i><span>Имэйл</span></button>
             </div>
-          </div>
-        </div>
-      `;
-    }
-
-    function renderBackup(person) {
-      if (!person) {
-        backupCard.innerHTML = `<div class="empty-state">Өнөөдөр backup engineer хуваарилагдаагүй байна.</div>`;
-        return;
-      }
-
-      backupCard.innerHTML = `
-        <div class="mini-person">
-          <div class="mini-avatar">${person.initials}</div>
-          <div>
-            <div class="mini-name">${person.name}</div>
-            <div class="mini-meta">${person.phone}</div>
           </div>
         </div>
       `;
@@ -588,7 +747,7 @@
         const content = people.length ? people.map(person => `
           <div class="shift-entry">
             <div class="shift-name"><i class="bi bi-check-square-fill"></i><span>${person.name}</span></div>
-            <div class="shift-time">09:00 - 18:00</div>
+            <div class="shift-time">${person.shift_start} - ${person.shift_end}</div>
             <div class="shift-phone">${person.phone}</div>
           </div>
         `).join("") : `<div class="empty-state">Хуваарьгүй</div>`;
@@ -610,7 +769,6 @@
       const todayAssignments = await fetchAssignments(`date=${exactDay}`);
       const todayPeople = todayAssignments.map(normalizePerson);
       renderPrimary(todayPeople[0] || null);
-      renderBackup(todayPeople[1] || null);
 
       const weekStart = addDays(startOfWeek(today), weekOffset * 7);
       const weekDays = Array.from({ length: 7 }, (_, index) => addDays(weekStart, index));
@@ -653,6 +811,18 @@
       await loadDashboard();
     });
 
+    secondaryCopyButton.addEventListener("click", copyPopupValue);
+    closeButton.addEventListener("click", closePopup);
+    popupBackdrop.addEventListener("click", event => {
+      if (event.target === popupBackdrop) {
+        closePopup();
+      }
+    });
+    document.addEventListener("keydown", event => {
+      if (event.key === "Escape") {
+        closePopup();
+      }
+    });
     loadDashboard();
   </script>
 </body>

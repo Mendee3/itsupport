@@ -2,6 +2,7 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from werkzeug.middleware.proxy_fix import ProxyFix
+from sqlalchemy import inspect, text
 import os
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -22,6 +23,31 @@ def resolve_database_uri():
 
     return uri
 
+
+def ensure_engineer_columns():
+    inspector = inspect(db.engine)
+    if "engineer" not in inspector.get_table_names():
+        return
+
+    existing = {column["name"] for column in inspector.get_columns("engineer")}
+    missing = []
+
+    if "position" not in existing:
+        missing.append("ALTER TABLE engineer ADD COLUMN position VARCHAR(120)")
+    if "shift_start" not in existing:
+        missing.append("ALTER TABLE engineer ADD COLUMN shift_start VARCHAR(20)")
+    if "shift_end" not in existing:
+        missing.append("ALTER TABLE engineer ADD COLUMN shift_end VARCHAR(20)")
+    if "responsibilities" not in existing:
+        missing.append("ALTER TABLE engineer ADD COLUMN responsibilities VARCHAR(255)")
+
+    if not missing:
+        return
+
+    for statement in missing:
+        db.session.execute(text(statement))
+    db.session.commit()
+
 def create_app():
     from werkzeug.middleware.proxy_fix import ProxyFix
     app = Flask(__name__)
@@ -41,5 +67,6 @@ def create_app():
     with app.app_context():
         from . import models  # noqa
         db.create_all()
+        ensure_engineer_columns()
 
     return app
